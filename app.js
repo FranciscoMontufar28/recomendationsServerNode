@@ -4,12 +4,25 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var mysql = require('mysql');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
 var items = require('./routes/items');
 
 var app = express();
+
+var conecction = mysql.createConnection({
+  host:'localhost',
+  database:'recomendationsdb',
+  user:"root",
+  password:""
+});
+
+app.use((req,res,next)=>{
+  req.db = conecction;
+  next();
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,6 +35,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use((req,res,next)=>{
+  console.log("Entro request del app");
+  next();
+});
 
 app.use('/', index);
 app.use('/users', users);
