@@ -39,6 +39,7 @@ router.get("/preferences", (req, res, next) => {
             "((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+"))"+
             "order by rand() Limit 5",(error,resultrandom)=>{
             res.send(resultrandom);
+            //res.send({itemname:resultrandom.itemname, itemdescription:resultrandom.itemdescription, itemurl: resultrandom.itemurl, itemsodium: "Este producto contiene "+resultrandom.itemsodium+" mg de sodio", itemsugar:"Este producto contiene "+resultrandom.itemsodium+" mg de sodio"})
             });
             
         }
@@ -71,13 +72,13 @@ router.get("/morepreferred", (req, res, next) => {
             "where userpreferences.usercodenum = "+userNameId+" and "+ 
             "((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+") "+
             "or (itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) order by rand() Limit 1",(err,resultPrefered)=>{
-            console.log("SELECT userpreferences.usercodenum, itemslocationbeacons.itemcode as itemcode, itemslocationbeacons.nameitem as itemname,itemslocationbeacons.description as itemdescription, itemslocationbeacons.urlimage as itemurl, itemslocationbeacons.sodium as itemsodium, itemslocationbeacons.sugar as itemsugar "+ 
+            /*console.log("SELECT userpreferences.usercodenum, itemslocationbeacons.itemcode as itemcode, itemslocationbeacons.nameitem as itemname,itemslocationbeacons.description as itemdescription, itemslocationbeacons.urlimage as itemurl, itemslocationbeacons.sodium as itemsodium, itemslocationbeacons.sugar as itemsugar "+ 
             "FROM itemslocationbeacons "+ 
             "inner join userpreferences "+ 
             "on itemslocationbeacons.itemcode = userpreferences.itemcode "+ 
             "where userpreferences.usercodenum = "+userNameId+" and "+ 
             "((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+") "+
-            "or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) order by rand() Limit 1");
+            "or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) order by rand() Limit 1");*/
         if(err){
             res.status(500).send("Error al consultar items");
         }else if(resultPrefered.length==0){
