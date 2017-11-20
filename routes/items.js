@@ -26,12 +26,6 @@ router.get("/preferences", (req, res, next) => {
 
         }else{
             var itemRandom = result[0].itemcode;
-            /*console.log("SELECT itemslocationbeacons.nameitem as itemname,itemslocationbeacons.description as itemdescription, itemslocationbeacons.urlimage as itemurl, itemslocationbeacons.sodium as itemsodium, itemslocationbeacons.sugar as itemsugar "+ 
-            "FROM similarity inner join itemslocationbeacons on itemslocationbeacons.itemcode = similarity.id_second_item "+ 
-            "where similarity.id_first_item = "+itemRandom+" and similarity.coef_similarity "+ 
-            "BETWEEN 40 AND 80 and "+ 
-            "((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+"))"+
-            "order by rand() Limit 5");*/
             req.db.query("SELECT itemslocationbeacons.nameitem as itemname,itemslocationbeacons.description as itemdescription, itemslocationbeacons.urlimage as itemurl, itemslocationbeacons.sodium as itemsodium, itemslocationbeacons.sugar as itemsugar "+ 
             "FROM similarity inner join itemslocationbeacons on itemslocationbeacons.itemcode = similarity.id_second_item "+ 
             "where similarity.id_first_item = "+itemRandom+" and similarity.coef_similarity "+ 
@@ -72,13 +66,6 @@ router.get("/morepreferred", (req, res, next) => {
             "where userpreferences.usercodenum = "+userNameId+" and "+ 
             "((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+") "+
             "or (itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) order by rand() Limit 1",(err,resultPrefered)=>{
-            /*console.log("SELECT userpreferences.usercodenum, itemslocationbeacons.itemcode as itemcode, itemslocationbeacons.nameitem as itemname,itemslocationbeacons.description as itemdescription, itemslocationbeacons.urlimage as itemurl, itemslocationbeacons.sodium as itemsodium, itemslocationbeacons.sugar as itemsugar "+ 
-            "FROM itemslocationbeacons "+ 
-            "inner join userpreferences "+ 
-            "on itemslocationbeacons.itemcode = userpreferences.itemcode "+ 
-            "where userpreferences.usercodenum = "+userNameId+" and "+ 
-            "((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+") "+
-            "or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) order by rand() Limit 1");*/
         if(err){
             res.status(500).send("Error al consultar items");
         }else if(resultPrefered.length==0){
@@ -89,10 +76,40 @@ router.get("/morepreferred", (req, res, next) => {
     });        
 });
 
-// router.post("/", (req, res, next) => {
-//     let item = req.body;
-//     res.send({ Success: true, item: item });
-// });
+router.get("/aisle",(req,res,next)=>{
+
+    let beaconIdOne = req.query.beaconidone;
+    let beaconIdTwo = req.query.beaconidtwo;
+
+    req.db.query("SELECT aislenamedb.aislename FROM aislenamedb inner join itemslocationbeacons on aislenamedb.aislelocation = itemslocationbeacons.aislelocation where ((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) limit 1",(err,aislename)=>{
+        console.log("SELECT aislenamedb.aislename FROM aislenamedb inner join itemslocationbeacons on aislenamedb.aislelocation = itemslocationbeacons.aislelocation where ((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) limit 1");
+        if(err){
+            res.status(500).send("Error al consultar items");
+        }else if(aislename.length==0){
+            res.status(404).send({Err:"No se obtuvieron resultados"});
+        }else{
+            res.send(aislename);
+        }
+
+    });
+});
+
+ router.post("/", (req, res, next) => {
+     let item = req.body;
+    req.db.query("INSERT INTO userresponsesdb SET userid = ?, nameitem = ?, response = ?",[item.userid, item.nameitem, item.response],(err, result)=>{
+        if(err){
+            res.status(500)
+            .send({err:"Erro al insertar item"});
+        }else{
+            res.send({Success:true});
+        }
+
+
+    });
+
+     //let item = req.body;
+     //res.send({ Success: true, item: item });
+});
 
 
 // router.put("/:id", (req, res, next) => {
