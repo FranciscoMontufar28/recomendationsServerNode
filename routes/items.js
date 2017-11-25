@@ -1,4 +1,5 @@
 var express = require("express");
+var int = require('int');
 var router = express.Router();
 
 router.use((req, res, next) => {
@@ -17,8 +18,7 @@ router.get("/preferences", (req, res, next) => {
      let userNameId = req.query.usernameid;
      let beaconIdOne = req.query.beaconidone;
      let beaconIdTwo = req.query.beaconidtwo;
-    req.db.query("SELECT userpreferences.itemcode FROM userpreferences inner join itemslocationbeacons on itemslocationbeacons.itemcode = userpreferences.itemcode where (userpreferences.usercodenum = "+"'"+userNameId+"'"+" and ((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+"))) order by rand() Limit 1",(err,result)=>{   
-        console.log("SELECT userpreferences.itemcode FROM userpreferences inner join itemslocationbeacons on itemslocationbeacons.itemcode = userpreferences.itemcode where (userpreferences.usercodenum = "+"'"+userNameId+"'"+" and ((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+"))) order by rand() Limit 1");
+    req.db.query("SELECT userpreferences.itemcode FROM userpreferences inner join featuresdb on featuresdb.itemcode = userpreferences.itemcode where (userpreferences.usercodenum = "+"'"+userNameId+"'"+" and ((featuresdb.beaconidone = "+"'"+beaconIdOne+"'"+" and featuresdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(featuresdb.beaconidone = "+"'"+beaconIdOne+"'"+" and featuresdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+"))) order by rand() Limit 1",(err,result)=>{   
         if(err){
             res.status(500).send("Error al consultar items");
         }else if(result.length==0){
@@ -26,12 +26,12 @@ router.get("/preferences", (req, res, next) => {
 
         }else{
             var itemRandom = result[0].itemcode;
-            req.db.query("SELECT itemslocationbeacons.nameitem as itemname,itemslocationbeacons.description as itemdescription, itemslocationbeacons.urlimage as itemurl, itemslocationbeacons.sodium as itemsodium, itemslocationbeacons.sugar as itemsugar "+ 
-            "FROM similarity inner join itemslocationbeacons on itemslocationbeacons.itemcode = similarity.id_second_item "+ 
+            req.db.query("SELECT featuresdb.nameitem as itemname,featuresdb.description as itemdescription, featuresdb.urlimage as itemurl, featuresdb.sodium as itemsodium, featuresdb.sugar as itemsugar, featuresdb.promotion as promotion, featuresdb.promotiondescription as promotiondescription "+ 
+            "FROM similarity inner join featuresdb on featuresdb.itemcode = similarity.id_second_item "+ 
             "where similarity.id_first_item = "+itemRandom+" and similarity.coef_similarity "+ 
-            "BETWEEN 40 AND 80 and "+ 
-            "((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+"))"+
-            "order by rand() Limit 5",(error,resultrandom)=>{
+            "BETWEEN 41 AND 81 and "+ 
+            "((featuresdb.beaconidone = "+"'"+beaconIdOne+"'"+" and featuresdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(featuresdb.beaconidone = "+"'"+beaconIdTwo+"'"+" and featuresdb.beaconidtwo = "+"'"+beaconIdOne+"'"+"))"+
+            "order by rand() Limit 1",(error,resultrandom)=>{
             res.send(resultrandom);
             //res.send({itemname:resultrandom.itemname, itemdescription:resultrandom.itemdescription, itemurl: resultrandom.itemurl, itemsodium: "Este producto contiene "+resultrandom.itemsodium+" mg de sodio", itemsugar:"Este producto contiene "+resultrandom.itemsodium+" mg de sodio"})
             });
@@ -42,6 +42,38 @@ router.get("/preferences", (req, res, next) => {
     
 
 });
+
+
+router.get("/preferencespromotion", (req, res, next) => {
+    
+        
+         let userNameId = req.query.usernameid;
+         let beaconIdOne = req.query.beaconidone;
+         let beaconIdTwo = req.query.beaconidtwo;
+        req.db.query("SELECT userpreferences.itemcode FROM userpreferences inner join itemsfeaturesdb on itemsfeaturesdb.itemcode = userpreferences.itemcode where (userpreferences.usercodenum = "+"'"+userNameId+"'"+" and ((itemsfeaturesdb.beaconidone = "+"'"+beaconIdOne+"'"+" and itemsfeaturesdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemsfeaturesdb.beaconidone = "+"'"+beaconIdOne+"'"+" and itemsfeaturesdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+"))) order by rand() Limit 1",(err,result)=>{   
+            if(err){
+                res.status(500).send("Error al consultar items");
+            }else if(result.length==0){
+                res.status(404).send({Err:"No se obtuvieron resultados"});
+    
+            }else{
+                var itemRandom = result[0].itemcode;
+                req.db.query("SELECT itemsfeaturesdb.nameitem as itemname,itemsfeaturesdb.description as itemdescription, itemsfeaturesdb.urlimage as itemurl, itemsfeaturesdb.sodium as itemsodium, itemsfeaturesdb.sugar as itemsugar, itemsfeaturesdb.promotion as promotion, itemsfeaturesdb.promotiondescription as promotiondescription "+ 
+                "FROM similarity inner join itemsfeaturesdb on itemsfeaturesdb.itemcode = similarity.id_second_item "+ 
+                "where similarity.id_first_item = "+itemRandom+" and similarity.coef_similarity "+ 
+                "BETWEEN 41 AND 81 and itemsfeaturesdb.promotion = 'true' and "+ 
+                "((itemsfeaturesdb.beaconidone = "+"'"+beaconIdOne+"'"+" and itemsfeaturesdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemsfeaturesdb.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemsfeaturesdb.beaconidtwo = "+"'"+beaconIdOne+"'"+"))"+
+                "order by rand() Limit 2",(error,resultrandom)=>{
+                res.send(resultrandom);
+                //res.send({itemname:resultrandom.itemname, itemdescription:resultrandom.itemdescription, itemurl: resultrandom.itemurl, itemsodium: "Este producto contiene "+resultrandom.itemsodium+" mg de sodio", itemsugar:"Este producto contiene "+resultrandom.itemsodium+" mg de sodio"})
+                });
+                
+            }
+        });
+    
+        
+    
+    });
 
 /*router.get("/:id", middleware, (req, res, next) => {
 
@@ -55,17 +87,38 @@ router.get("/preferences", (req, res, next) => {
 
 });*/
 
+router.get("/morepreferredpromotion", (req, res, next) => {
+    
+         let userNameId = req.query.usernameid;
+         let beaconIdOne = req.query.beaconidone;
+         let beaconIdTwo = req.query.beaconidtwo;
+    req.db.query("SELECT itemsfeaturesdb.nameitem as itemname,itemsfeaturesdb.description as itemdescription, itemsfeaturesdb.urlimage as itemurl, itemsfeaturesdb.sodium as itemsodium, itemsfeaturesdb.sugar as itemsugar, itemsfeaturesdb.promotion as promotion, itemsfeaturesdb.promotiondescription as promotiondescription FROM itemsfeaturesdb "+ 
+            "inner join userpreferences "+ 
+            "on itemsfeaturesdb.itemcode = userpreferences.itemcode "+ 
+            "where userpreferences.usercodenum = "+userNameId+" and itemsfeaturesdb.promotion = 'true' and "+ 
+            "((itemsfeaturesdb.beaconidone = "+"'"+beaconIdOne+"'"+" and itemsfeaturesdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+") "+
+            "or (itemsfeaturesdb.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemsfeaturesdb.beaconidtwo = "+"'"+beaconIdOne+"'"+")) order by rand() Limit 1",(err,resultPrefered)=>{
+        if(err){
+            res.status(500).send("Error al consultar items");
+        }else if(resultPrefered.length==0){
+            res.status(404).send({Err:"No se obtuvieron resultados"});
+        }else{
+            res.send(resultPrefered);
+        }
+    });        
+});
+
 router.get("/morepreferred", (req, res, next) => {
     
          let userNameId = req.query.usernameid;
          let beaconIdOne = req.query.beaconidone;
          let beaconIdTwo = req.query.beaconidtwo;
-    req.db.query("SELECT itemslocationbeacons.nameitem as itemname,itemslocationbeacons.description as itemdescription, itemslocationbeacons.urlimage as itemurl, itemslocationbeacons.sodium as itemsodium, itemslocationbeacons.sugar as itemsugar FROM itemslocationbeacons "+ 
+    req.db.query("SELECT featuresdb.nameitem as itemname,featuresdb.description as itemdescription, featuresdb.urlimage as itemurl, featuresdb.sodium as itemsodium, featuresdb.sugar as itemsugar, featuresdb.promotion as promotion, featuresdb.promotiondescription as promotiondescription FROM featuresdb "+ 
             "inner join userpreferences "+ 
-            "on itemslocationbeacons.itemcode = userpreferences.itemcode "+ 
+            "on featuresdb.itemcode = userpreferences.itemcode "+ 
             "where userpreferences.usercodenum = "+userNameId+" and "+ 
-            "((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+") "+
-            "or (itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) order by rand() Limit 1",(err,resultPrefered)=>{
+            "((featuresdb.beaconidone = "+"'"+beaconIdOne+"'"+" and featuresdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+") "+
+            "or (featuresdb.beaconidone = "+"'"+beaconIdTwo+"'"+" and featuresdb.beaconidtwo = "+"'"+beaconIdOne+"'"+")) order by rand() Limit 1",(err,resultPrefered)=>{
         if(err){
             res.status(500).send("Error al consultar items");
         }else if(resultPrefered.length==0){
@@ -81,8 +134,7 @@ router.get("/aisle",(req,res,next)=>{
     let beaconIdOne = req.query.beaconidone;
     let beaconIdTwo = req.query.beaconidtwo;
 
-    req.db.query("SELECT aislenamedb.aislename FROM aislenamedb inner join itemslocationbeacons on aislenamedb.aislelocation = itemslocationbeacons.aislelocation where ((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) limit 1",(err,aislename)=>{
-        console.log("SELECT aislenamedb.aislename FROM aislenamedb inner join itemslocationbeacons on aislenamedb.aislelocation = itemslocationbeacons.aislelocation where ((itemslocationbeacons.beaconidone = "+"'"+beaconIdOne+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemslocationbeacons.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemslocationbeacons.beaconidtwo = "+"'"+beaconIdOne+"'"+")) limit 1");
+    req.db.query("SELECT aislenamedb.aislename FROM aislenamedb inner join itemsfeaturesdb on aislenamedb.aislelocation = itemsfeaturesdb.aislelocation where ((itemsfeaturesdb.beaconidone = "+"'"+beaconIdOne+"'"+" and itemsfeaturesdb.beaconidtwo = "+"'"+beaconIdTwo+"'"+")or(itemsfeaturesdb.beaconidone = "+"'"+beaconIdTwo+"'"+" and itemsfeaturesdb.beaconidtwo = "+"'"+beaconIdOne+"'"+")) limit 1",(err,aislename)=>{
         if(err){
             res.status(500).send("Error al consultar items");
         }else if(aislename.length==0){
@@ -92,6 +144,39 @@ router.get("/aisle",(req,res,next)=>{
         }
 
     });
+});
+
+router.get("/closepromotion",(req,res,next)=>{
+    let userNameId = req.query.usernameid;
+    let beaconIdOne = req.query.beaconidone;
+    let beaconIdTwo = req.query.beaconidtwo;
+
+    req.db.query("SELECT featuresdb.aislelocation FROM featuresdb where ((featuresdb.beaconidone="+"'"+beaconIdOne+"'"+" and featuresdb.beaconidtwo="+"'"+beaconIdTwo+"'"+")or(featuresdb.beaconidone="+"'"+beaconIdOne+"'"+" and featuresdb.beaconidtwo="+"'"+beaconIdTwo+"'"+")) limit 1",(err,result)=>{
+        if(err){
+            res.status(500).send("Error al consultar items");
+        }else if(result.length==0){
+            res.status(404).send({Err:"No se obtuvieron resultados"});
+
+        }else{
+            var itemRandom = int(result[0].aislelocation);
+            var itemRandom_sum = itemRandom.add(1);
+            var itemRandom_rest = itemRandom - 1;
+            req.db.query("SELECT itemsfeaturesdb.nameitem as itemname,aislenamedb.aislename as itemdescription, itemsfeaturesdb.urlimage as itemurl, itemsfeaturesdb.sodium as itemsodium, itemsfeaturesdb.sugar as itemsugar, itemsfeaturesdb.promotion as promotion, itemsfeaturesdb.promotiondescription as promotiondescription "+
+            "FROM itemsfeaturesdb inner join aislenamedb on aislenamedb.aislelocation = itemsfeaturesdb.aislelocation "+
+            "where itemsfeaturesdb.promotion = 'true' and ((itemsfeaturesdb.aislelocation <> "+itemRandom+" or itemsfeaturesdb.aislelocation <> "+itemRandom_sum+") or (itemsfeaturesdb.aislelocation <> "+itemRandom+" or itemsfeaturesdb.aislelocation <> "+itemRandom_rest+")) "+
+            "order by rand() Limit 1",(error,promotionout)=>{
+                if(error){
+                    res.status(500).send("Error al consultar items");
+                }else if(promotionout.length==0){
+                    res.status(404).send({error:"No se obtuvieron resultados"});
+                }else{
+                    res.send([{itemname:promotionout[0].itemname,itemdescription:promotionout[0].itemdescription,itemurl:promotionout[0].itemurl,itemsodium:"other",itemsugar:"other",promotion:promotionout[0].promotion,promotiondescription:promotionout[0].promotiondescription}]);
+                }
+            });
+            
+        }
+    });
+
 });
 
  router.post("/", (req, res, next) => {
@@ -107,8 +192,6 @@ router.get("/aisle",(req,res,next)=>{
 
     });
 
-     //let item = req.body;
-     //res.send({ Success: true, item: item });
 });
 
 
